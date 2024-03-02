@@ -1,0 +1,46 @@
+#include <REG52.H>
+sbit BUTTON0 = P2^0;
+unsigned char lights = 1;
+
+void startTimer1()
+{
+ TMOD = TMOD & 207; // Mask out T1M1/T1M0
+ TMOD = TMOD + 16; // Set T1M1/T1M0 to 01
+ TR1 = 1; 
+ ET1 = 1; 
+ EA = 1; 
+}
+
+void timer1ISR() interrupt 3
+{
+
+ if (lights == 16)
+ lights = 1;
+ else
+ lights = lights << 1;
+ P0 = ~lights;
+}
+
+void main()
+{
+ unsigned int i = 0;
+ startTimer1();
+ while (1)
+ {
+ if (!BUTTON0)
+ {
+ 
+ while (!BUTTON0);
+ EA = 0;
+ if (lights == 16)
+ lights = 1;
+ else
+ {
+ for (i = 0; i < 1000; i++);
+ lights = lights << 1;
+ }
+ EA = 1;
+ P0 = ~lights;
+ }
+ }
+}
